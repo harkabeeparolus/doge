@@ -145,6 +145,9 @@ PREFIXES = DogeDeque(
     "very much",
     "pretty",
     "so",
+    "leet",
+    "quantum",
+    "plz explain",
 )
 
 # Please keep in mind that this particular shibe is a terminal hax0r shibe,
@@ -171,10 +174,31 @@ WORD_LIST = [
     "uptime",
     "thread safe",
     "posix",
+    "kernel",
+    "cloud",
+    "regex",
+    "python",
+    "rootkit",
+    "sudo",
+    "chown",
+    "rm -rf /",
+    "tcpdump",
+    "segfault",
+    "firewall",
+    "ai",
+    "machine learning",
+    "deep learning",
+    "blockchain",
+    "packet sniff",
+    "tail",
+    "fuzzing",
+    "dns spoof",
+    "zsh supremacy",
+    "localhost",
 ]
 WORDS = DogeDeque(*WORD_LIST)
 
-SUFFIXES = DogeDeque("wow", "lol", "hax", "plz", "lvl=100")
+SUFFIXES = DogeDeque("wow", "lol", "hax", "plz", "lvl=100", "amaze", "omg")
 
 # A subset of the 255 color cube with the darkest colors removed. This is
 # suited for use on dark terminals. Lighter colors are still present so some
