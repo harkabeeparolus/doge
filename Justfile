@@ -1,3 +1,8 @@
+# All commands need to be very simple and cross-platform compatible,
+# so they work both in bash and Powershell.
+
+set windows-shell := ["powershell.exe", "-NoLogo", "-NoProfile", "-Command"]
+
 # Run all checks: fix, type check, and test
 check: fix typecheck test
 
