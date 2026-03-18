@@ -262,23 +262,67 @@ class Doge:
 
         return True
 
-    def get_processes(self) -> list[str]:
-        """Grab a shuffled list of all currently running process names."""
-        processes = set()
+    def _get_win32_processes(self) -> set[str]:
+        """Grab process names on Windows via tasklist."""
+        processes: set[str] = set()
+
+        # Plain tasklist for all process exe names
+        result = subprocess.run(
+            ["tasklist", "/FO", "CSV", "/NH"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        for line in result.stdout.splitlines():
+            if line and "," in line:
+                name = line.split(",", maxsplit=1)[0].strip('"')
+                if name.lower().endswith(".exe"):
+                    name = name[:-4]
+                if name and len(name) >= self.MIN_PS_LEN and ":" not in name:
+                    processes.add(name)
+
+        # Also grab UWP/Store app names from package identifiers
         try:
-            # POSIX ps, so it should work in most environments where doge would
-            result = subprocess.run(
-                ["ps", "-A", "-o", "comm="],  # noqa: S607
+            apps_result = subprocess.run(
+                ["tasklist", "/FO", "CSV", "/NH", "/apps"],  # noqa: S607
                 capture_output=True,
                 text=True,
                 check=True,
             )
+            for line in apps_result.stdout.splitlines():
+                parts = line.strip().strip('"').rsplit('","', maxsplit=1)
+                if len(parts) == 2:  # noqa: PLR2004
+                    pkg = parts[-1].strip('"')
+                    # e.g. "Microsoft.WindowsTerminal_1.23..." -> "WindowsTerminal"
+                    app_name = pkg.split("_", maxsplit=1)[0].rsplit(".", maxsplit=1)[-1]
+                    if (
+                        app_name
+                        and len(app_name) >= self.MIN_PS_LEN
+                        and ":" not in app_name
+                    ):
+                        processes.add(app_name)
+        except (OSError, subprocess.CalledProcessError):
+            pass
 
-            for comm in result.stdout.splitlines():
-                name = comm.split("/")[-1]
-                # Filter short and weird ones
-                if name and len(name) >= self.MIN_PS_LEN and ":" not in name:
-                    processes.add(name)
+        return processes
+
+    def get_processes(self) -> list[str]:
+        """Grab a shuffled list of all currently running process names."""
+        processes: set[str] = set()
+        try:
+            if sys.platform == "win32":
+                processes = self._get_win32_processes()
+            else:
+                result = subprocess.run(
+                    ["ps", "-A", "-o", "comm="],  # noqa: S607
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                for comm in result.stdout.splitlines():
+                    name = comm.split("/")[-1]
+                    if name and len(name) >= self.MIN_PS_LEN and ":" not in name:
+                        processes.add(name)
 
         except (OSError, subprocess.CalledProcessError):
             pass
